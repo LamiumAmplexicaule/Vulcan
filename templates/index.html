@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    {% if title -%}
+        <title>{{ title }}</title>
+    {%- else -%}
+        <title>Template</title>
+    {%- endif %}
+    <link href="{{ url_for('static', path='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='css/bootstrap-icons.css') }}" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-5 mx-auto">
+            <div class="input-group">
+                <input class="form-control border-end-0 border" type="search" placeholder="Search..."
+                       id="vulcan-search-input" onkeydown="enter_down(this)">
+                <button class="btn btn-outline-secondary bg-white border-start-0 border"
+                        type="button" id="vulcan-search-button">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-5 flex-nowrap justify-content-center">
+        <div class="col text-center">
+            <p>Amazon</p>
+            <div class="" id="amazon"></div>
+        </div>
+        <div class="col text-center">
+            <p>Yodobashi</p>
+            <div id="yodobashi"></div>
+        </div>
+        <div class="col text-center">
+            <p>ファクトリーギア</p>
+            <div id="factory_gear"></div>
+        </div>
+        <div class="col text-center">
+            <p>エヒメマシン</p>
+            <div id="ehime_machine"></div>
+        </div>
+        <div class="col text-center">
+            <p>WIT</p>
+            <div id="wit"></div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', path='js/bootstrap.bundle.min.js') }}"></script>
+<script>
+    async function post(url = '', data = {}) {
+        const response = await fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify(data)
+        })
+        return response.json();
+    }
+
+    async function search(site, value) {
+        const result_json = await post('{{ url_for('search') }}', {site: site, value: value});
+        let html = "";
+        for (let i = 0; i < result_json.result.length; i++) {
+            html += `
+<div>
+    ${result_json.result[i][0]} => ${result_json.result[i][1]}
+</div>
+`
+        }
+        return html
+    }
+
+    const searchButton = document.getElementById('vulcan-search-button');
+    const searchInput = document.getElementById('vulcan-search-input');
+    const amazon = document.getElementById('amazon');
+    const yodobashi = document.getElementById('yodobashi');
+    const factory_gear = document.getElementById('factory_gear');
+    const ehime_machine = document.getElementById('ehime_machine');
+    const wit = document.getElementById('wit');
+
+    searchInput.addEventListener("keydown", event => {
+        if (event.code === 'Enter') {
+            event.preventDefault();
+            searchButton.click();
+        }
+    });
+
+    searchButton.addEventListener('click', async () => {
+        const inputValue = searchInput.value;
+        amazon.innerHTML = await search('amazon', inputValue);
+        yodobashi.innerHTML = await search('yodobashi', inputValue);
+        factory_gear.innerHTML = await search('factory_gear', inputValue);
+        ehime_machine.innerHTML = await search('ehime_machine', inputValue);
+        wit.innerHTML = await search('wit', inputValue);
+    });
+</script>
+</body>
+</html>
